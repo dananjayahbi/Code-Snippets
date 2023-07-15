@@ -1,10 +1,10 @@
 const router = require("express").Router();
 
 const {
-    processPrompt,
+  processPrompt,
 } = require("../controllers/AIresponseController");
 
-// GET AI RESPONSE
+// POST request to process the initial prompt
 router.post("/processPrompt", processPrompt);
 
 module.exports = router;
