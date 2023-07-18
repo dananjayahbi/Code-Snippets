@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import axios from "axios";
@@ -16,11 +16,11 @@ function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [conversation, setConversation] = useState([]);
   const [showCustomSend, setShowCustomSend] = useState(false);
-  const [customSendClicked, setCustomSendClicked] = useState(false);
 
   //Continue generating button submission
   const handleSubmit = async (values) => {
     setIsTyping(true);
+    setReceivedPrompt((prevPrompt) => prevPrompt ? prevPrompt + " Generating..." : "Generating...");
   
     try {
       const response = await axios.post("http://localhost:8060/AI/processPrompt", {
@@ -35,37 +35,37 @@ function App() {
       ];
   
       setConversation(updatedConversation);
-  
-      if (customSendClicked) {
-        setReceivedPrompt((prevPrompt) => prevPrompt + " " + botResponse);
-      } else {
-        setReceivedPrompt((prevPrompt) => prevPrompt + " " + botResponse);
-      }
-  
+      setReceivedPrompt((prevPrompt) => prevPrompt.replace(" Generating...", "") + " " + botResponse);
       setShowCustomSend(true);
     } catch (error) {
       console.log(error);
     } finally {
       setIsTyping(false);
+      setReceivedPrompt((prevPrompt) => prevPrompt.replace(" Generating...", "")); // Remove "Generating..." text
     }
   };
+  
+  
+  
+  
   
   //Send button submission
   const handleSubmit2 = async (values) => {
     setIsTyping(true);
-
+    setReceivedPrompt("Generating..."); // Display "Generating..." in the text field
+  
     try {
       const response = await axios.post("http://localhost:8060/AI/processPrompt", {
         conversation: conversation,
         prompt: values.prompt
       });
-
-      const botResponse = response.data.bot.trim(); // trims any trailing spaces or '\n'
+  
+      const botResponse = response.data.bot.trim();
       const updatedConversation = [
         ...conversation,
         { user: values.prompt, bot: botResponse }
       ];
-      setReceivedPrompt("");
+      setReceivedPrompt(""); // Clear the "Generating..." text
       setConversation(updatedConversation);
       await typeText(botResponse);
     } catch (error) {
@@ -75,6 +75,7 @@ function App() {
       setShowCustomSend(true);
     }
   };
+  
 
   const typeText = async (text) => {
     for (let i = 0; i < text.length; i++) {
@@ -88,7 +89,6 @@ function App() {
   };
 
   const handleCustomSubmit = () => {
-    setCustomSendClicked(true);
     handleSubmit({ prompt: "continue generating" });
   };
 
